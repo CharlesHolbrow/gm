@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Note on or Note off events
 type Note struct {
@@ -15,6 +17,14 @@ func (n Note) String() string {
 		return fmt.Sprintf("Note On: %d Vel: %d Channel(%x)", n.Note, n.Vel, n.Ch)
 	}
 	return fmt.Sprintf("Note Off: %d Vel: %d Channel(%x)", n.Note, n.Vel, n.Ch)
+}
+
+// Midi return the correct arguments to pass in to portmidi.WriteShort
+func (n Note) Midi() (status, b1, b2 int64) {
+	if n.On {
+		return 0x90 + int64(n.Ch%16), int64(n.Note), int64(n.Vel)
+	}
+	return 0x80 + int64(n.Ch%16), int64(n.Note), int64(n.Vel)
 }
 
 // CC Event

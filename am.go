@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"sync"
 
@@ -28,6 +29,15 @@ func main() {
 		log.Panicln("Error Making Midi Stream", err)
 	}
 	defer ms.Close()
+
+	out, err := portmidi.NewOutputStream(2, 1024, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	out.WriteShort(Note{On: true, Note: 64, Vel: 127}.Midi())
+	time.Sleep(time.Second)
+	out.WriteShort(Note{Note: 64, Vel: 127}.Midi())
+
 	g := sync.WaitGroup{}
 	g.Add(1)
 	g.Wait()
