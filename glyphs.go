@@ -49,6 +49,7 @@ func ReadGlyphsDotJSON() (Glyphs, error) {
 	return glyphs, nil
 }
 
+// Get a glyph with it's Name
 func (g Glyphs) Get(name string) []byte {
 	data, ok := g.byName[name]
 	if !ok {
@@ -59,6 +60,7 @@ func (g Glyphs) Get(name string) []byte {
 	return copied
 }
 
+// GetByInt returns a glyph indexed by it's interger.
 func (g Glyphs) GetByInt(i int) []byte {
 	if i >= len(g.byInt) || i < 0 {
 		return g.Get("empty")
@@ -69,10 +71,12 @@ func (g Glyphs) GetByInt(i int) []byte {
 	return copied
 }
 
+// Length returns thenumber of Glyphs
 func (g Glyphs) Length() int {
 	return len(g.byInt)
 }
 
+// Random gets a random Glpph
 func (g Glyphs) Random() []byte {
 	return g.GetByInt(rand.Intn(len(g.byInt)))
 }
