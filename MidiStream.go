@@ -8,13 +8,8 @@ import (
 
 // MidiStream wraps a portmidi.Stream
 type MidiStream struct {
-	NoteChan    chan Note
-	CCChan      chan CC
-	PWChan      chan PitchWheel
-	MiscChan    chan interface{}
 	pmStream    *portmidi.Stream // portmidi stream
 	midiHandler MidiHandler
-	quit        chan bool
 }
 
 // MakeMidiStream creates a MidiStream object that is listening to a portmidi
@@ -30,19 +25,11 @@ func MakeMidiStream(deviceID int, handler MidiHandler) (*MidiStream, error) {
 	ms = &MidiStream{
 		pmStream:    in,
 		midiHandler: handler,
-		quit:        make(chan bool),
 	}
 
 	go func() {
-		ch := in.Listen()
-		for {
-			select {
-			case event := <-ch:
-				ms.handlePortmidiEvent(event)
-			case <-ms.quit:
-				fmt.Println("Quitting!")
-				return
-			}
+		for event := range in.Listen() {
+			ms.handlePortmidiEvent(event)
 		}
 	}()
 
@@ -52,7 +39,6 @@ func MakeMidiStream(deviceID int, handler MidiHandler) (*MidiStream, error) {
 // Close and stop piping input to channels
 func (ms MidiStream) Close() {
 	ms.pmStream.Close()
-	ms.quit <- true
 }
 
 // Send pormidi events to their appropriate go channels
