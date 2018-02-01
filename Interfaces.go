@@ -1,4 +1,4 @@
-package main
+package gm
 
 // MidiHandler represents any device that listens for midi events
 type MidiHandler interface {
