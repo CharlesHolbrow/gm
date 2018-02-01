@@ -23,7 +23,7 @@ func main() {
 	}
 
 	fmt.Printf("Listening for MIDI on %d - %v\n", midiInputDeviceID, *portmidi.Info(midiInputDeviceID))
-	myMidiHandler := &midiLogger{}
+	myMidiHandler := NewMidiLogger()
 	ms, err := MakeMidiStream(midiInputDeviceID, myMidiHandler)
 	if err != nil {
 		log.Panicln("Error Making Midi Stream", err)
