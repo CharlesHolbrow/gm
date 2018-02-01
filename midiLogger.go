@@ -23,14 +23,24 @@ type midiLogger struct {
 	// resolution is only 16th notes, so when the transport moves in the host,
 	// slaves do not know precisely where to seek to.
 	//
+	// When reaper pauses and continues it sends messages like this:
+	// 1. Tick
+	// 2. Stop
+	// 3. SongPosition (to the CLOSEST 16th note - possibly ahead or behind)
+	// -- unpause --
+	// 4. Continue
+	// 5. Tick (not immediately, but on the next scheduled tick)
+	// The unreliability in step 3 makes it difficult to follow the actual
+	// position of the pause.
+	//
 	// When reaper loops on sixteenth notes, it sends messages like this:
-	// 1. clock tick (at the very end)
+	// 1. Clock tick (at the very end)
 	// 2. Note off for hanging notes
 	// 3. Note on for notes that begin at the begining of the loop (weird)
-	// 4. midi stop
+	// 4. Midi stop
 	// -- reaper transport jumps back - no clock tick sent --
-	// 5. midi start (wait for one tick)
-	// 6. clock tick
+	// 5. Midi start (wait for one tick)
+	// 6. Clock tick
 	// Steps 1, 2, 3, 4, 5 all happem within a millisecond
 	//
 	// The implementation here assumes that we only seek exactly to 18th notes.
