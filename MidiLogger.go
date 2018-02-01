@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-type midiLogger struct {
+// MidiLogger is a Midi handler that logs some info a bout incoming midi events.
+// It make a reasonable effort to keep track of how many 16th notes have elapsed
+// on the incoming midi clock. However, it is impossible to keep perfect track
+// as esplained in the source code comments.
+type MidiLogger struct {
 	keys [16][128]uint8
 	ccs  [16][128]uint8
 
@@ -56,7 +60,15 @@ type midiLogger struct {
 	stopTime  time.Time
 }
 
-func (mh *midiLogger) handleNote(n Note) {
+// NewMidiLogger creates a New MidiLogger with the start time initialized.
+func NewMidiLogger() *MidiLogger {
+	return &MidiLogger{
+		startTime: time.Now(),
+	}
+}
+
+// HandleNote processing incoming Note ons and Note Offs
+func (mh *MidiLogger) HandleNote(n Note) {
 	if n.Vel == 0 {
 		n.On = false
 	}
@@ -71,8 +83,8 @@ func (mh *midiLogger) handleNote(n Note) {
 	fmt.Printf("%s - %d.%d (%v)\n", n, mh.sixteenthsElapsed, mh.beatPosition, time.Since(mh.startTime))
 }
 
-// Handle sync messages including start, stop, continue, spp
-func (mh *midiLogger) handleMisc(event interface{}) {
+// HandleMisc sync messages including start, stop, continue, spp
+func (mh *MidiLogger) HandleMisc(event interface{}) {
 	switch t := event.(type) {
 	case Clock:
 		if !mh.isPlaying {
@@ -121,23 +133,30 @@ func (mh *midiLogger) handleMisc(event interface{}) {
 	fmt.Printf("%s - %d.%d (%v)\n", event, mh.sixteenthsElapsed, mh.beatPosition, time.Since(mh.startTime))
 }
 
-func (mh *midiLogger) handleCC(cc CC) {
+// HandleCC handles incoming CC events. Part of the MidiHandler interface.
+func (mh *MidiLogger) HandleCC(cc CC) {
 	mh.ccs[cc.Ch][cc.Number] = cc.Value
 	switch cc.Number {
 	case 64:
 		if cc.Value >= 64 {
-			// pedal down
+			fmt.Printf("Pedal Down - %s - %d.%d (%v)\n", cc, mh.sixteenthsElapsed, mh.beatPosition, time.Since(mh.startTime))
 		} else {
-			// pedal up
+			fmt.Printf("Pedal Up - %s - %d.%d (%v)\n", cc, mh.sixteenthsElapsed, mh.beatPosition, time.Since(mh.startTime))
 		}
+	case 123:
+		fmt.Printf("All Notes Off - %s - %d.%d (%v)\n", cc, mh.sixteenthsElapsed, mh.beatPosition, time.Since(mh.startTime))
+	default:
+		fmt.Printf("%s - %d.%d (%v)\n", cc, mh.sixteenthsElapsed, mh.beatPosition, time.Since(mh.startTime))
 	}
 }
 
-func (mh *midiLogger) onSixteenth() {
+func (mh *MidiLogger) onSixteenth() {
 }
 
-func (mh *midiLogger) onWhole() {
+func (mh *MidiLogger) onWhole() {
 }
 
-func (mh *midiLogger) handlePW(pw PitchWheel) {
+// HandlePW handles incoming Pitch Wehll events. Part of the MidiHandler interface.
+func (mh *MidiLogger) HandlePW(pw PitchWheel) {
+	fmt.Printf("%s - %d.%d (%v)\n", pw, mh.sixteenthsElapsed, mh.beatPosition, time.Since(mh.startTime))
 }

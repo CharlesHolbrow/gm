@@ -47,15 +47,15 @@ func (ms MidiStream) handlePortmidiEvent(e portmidi.Event) {
 	nib2 := uint8(e.Status & 0x0F)
 	switch nib1 {
 	case 0x8:
-		ms.midiHandler.handleNote(Note{On: false, Ch: nib2, Note: uint8(e.Data1), Vel: uint8(e.Data2)})
+		ms.midiHandler.HandleNote(Note{On: false, Ch: nib2, Note: uint8(e.Data1), Vel: uint8(e.Data2)})
 	case 0x9:
-		ms.midiHandler.handleNote(Note{On: true, Ch: nib2, Note: uint8(e.Data1), Vel: uint8(e.Data2)})
+		ms.midiHandler.HandleNote(Note{On: true, Ch: nib2, Note: uint8(e.Data1), Vel: uint8(e.Data2)})
 	case 0xE:
-		ms.midiHandler.handlePW(PitchWheel{Ch: nib2, Value: int(e.Data2*127 + e.Data1 - 8128)})
+		ms.midiHandler.HandlePW(PitchWheel{Ch: nib2, Value: int(e.Data2*127 + e.Data1 - 8128)})
 	case 0xF:
-		ms.midiHandler.handleMisc(parse0xF(nib2, e.Data1, e.Data2))
+		ms.midiHandler.HandleMisc(parse0xF(nib2, e.Data1, e.Data2))
 	case 0xB:
-		ms.midiHandler.handleCC(CC{Ch: nib2, Number: uint8(e.Data1), Value: uint8(e.Data2)})
+		ms.midiHandler.HandleCC(CC{Ch: nib2, Number: uint8(e.Data1), Value: uint8(e.Data2)})
 	default:
 		fmt.Println("Warning. Unhandled Midi event:", e)
 	}
